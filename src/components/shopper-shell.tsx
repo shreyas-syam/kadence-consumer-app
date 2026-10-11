@@ -1,5 +1,5 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
-import { Link } from '@tanstack/react-router';
+import { Link, useRouterState } from '@tanstack/react-router';
 import { ShoppingBag, MapPin, ChevronDown, Search, Store, SlidersHorizontal, LocateFixed, WifiOff, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,6 +20,7 @@ export function useShopper() {
   return value;
 }
 export function ShopperShell({ children }: { children: ReactNode }) {
+  const pathname = useRouterState({ select: state => state.location.pathname });
   const [area, setArea] = useState('Edappally');
   const [query, setQuery] = useState('');
   const [response, setResponse] = useState<SearchResponse | null>(null);
@@ -78,9 +79,9 @@ export function ShopperShell({ children }: { children: ReactNode }) {
       {offline && <div className="offline-banner flex items-center gap-2" role="status"><WifiOff size={15} />You’re offline. Saved results may be out of date.</div>}
       {children}
       <nav className="bottom-nav" aria-label="Main navigation">
-        <Link to="/" activeOptions={{ exact: true }} className={`nav-item ${!response ? 'active' : ''}`}><Search /><span>Search</span></Link>
-        <Button variant="ghost" asChild className="h-auto"><Link to="/" className={`nav-item ${response ? 'active' : ''}`} onClick={() => { if (!response) void search(query || 'rice'); }}><Store /><span>Nearby shops</span></Link></Button>
-        <Link to="/settings" className="nav-item"><SlidersHorizontal /><span>Settings</span></Link>
+        <Link to="/" className={`nav-item ${pathname === '/' && !response ? 'active' : ''}`}><Search /><span>Search</span></Link>
+        <Button variant="ghost" asChild className="h-auto"><Link to="/" className={`nav-item ${(pathname === '/' && !!response) || pathname.startsWith('/shops/') ? 'active' : ''}`} onClick={() => { if (!response) void search(query || 'rice'); }}><Store /><span>Nearby shops</span></Link></Button>
+        <Link to="/settings" className={`nav-item ${pathname === '/settings' ? 'active' : ''}`}><SlidersHorizontal /><span>Settings</span></Link>
       </nav>
       <Dialog open={locationOpen} onOpenChange={setLocationOpen}><DialogContent><DialogHeader><DialogTitle>Your neighbourhood</DialogTitle><DialogDescription>Choose an area, or use your location to find shops nearby. Your precise location is not saved or shared.</DialogDescription></DialogHeader>
         <Button variant="botanical" onClick={locate} disabled={locating}>{locating ? <Loader2 className="animate-spin" /> : <LocateFixed />}{locating ? 'Finding your location…' : 'Use my location'}</Button>

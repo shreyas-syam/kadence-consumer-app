@@ -83,7 +83,7 @@
 .bottom-nav { position:fixed; bottom:0; left:50%; transform:translateX(-50%); width:min(100%,760px); display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:10px; padding:9px 22px max(10px,env(safe-area-inset-bottom)); border-top:1px solid var(--border); background:var(--background); z-index:30; }
 .nav-item { min-height:54px; display:flex; align-items:center; justify-content:center; flex-direction:column; gap:5px; color:var(--muted-foreground); font-size:10px; border-radius:18px; }
 .nav-item svg { width:21px; height:21px; stroke-width:1.7; }
-.nav-item[data-status=active], .nav-item.active { background:var(--secondary); color:var(--primary); font-weight:700; }
+.nav-item.active { background:var(--secondary); color:var(--primary); font-weight:700; }
 .availability { padding:5px 9px; border-radius:999px; display:inline-flex; gap:4px; align-items:center; white-space:nowrap; font-size:10px; font-weight:650; }
 .availability.in { background:var(--accent); color:var(--accent-foreground); }
 .availability.low { background:var(--warning-surface); color:var(--warning); }
