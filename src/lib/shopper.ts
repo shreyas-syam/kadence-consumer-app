@@ -22,6 +22,12 @@ const products = [
   { names: ['banana', 'fruit', 'പഴം'], product: 'Robusta Bananas · 1 kg', price: 55 },
   { names: ['egg', 'eggs', 'മുട്ട'], product: 'Farm Eggs · 6 pieces', price: 48 },
   { names: ['oil', 'coconut'], product: 'Coconut Oil · 500 ml', price: 160 },
+  { names: ['flour', 'atta'], product: 'Wheat Flour · 1 kg', price: 55 },
+  { names: ['spices', 'spice', 'masala'], product: 'Mixed Spices · 100 g', price: 65 },
+  { names: ['lentils', 'lentil', 'dal'], product: 'Red Lentils · 1 kg', price: 120 },
+  { names: ['bread', 'loaf'], product: 'Fresh Bread · 400 g', price: 45 },
+  { names: ['sugar'], product: 'Sugar · 1 kg', price: 48 },
+  { names: ['tea'], product: 'Tea · 250 g', price: 110 },
 ];
 export function distanceKm(a: Coordinates, b: Coordinates) {
   const rad = (v: number) => v * Math.PI / 180;
@@ -39,9 +45,13 @@ export function sortNearby(shops: ShopResult[], coordinates?: Coordinates): Shop
 export function alternatives(shops: ShopResult[], selected: ShopResult) {
   return shops.filter(shop => shop.id !== selected.id && shop.status === 'in' && shop.product === selected.product);
 }
+export function nearbyShops(area: string, coordinates?: Coordinates) {
+  return sortNearby(exampleShops.filter(shop => validCoordinates(coordinates)
+    ? distanceKm(coordinates, shop.coordinates) <= 15 : shop.area === area), coordinates);
+}
 export function demoSearch(query: string, area: string, coordinates?: Coordinates): SearchResponse {
   const q = query.trim().toLowerCase();
-  const found = q ? products.find(p => p.names.some(name => q.includes(name))) : undefined;
+   const found = q ? products.find(p => p.names.some(name => q.includes(name) || name.startsWith(q))) : undefined;
   if (!found) return { shops: [], demo: true };
   const shops = exampleShops.filter(s => validCoordinates(coordinates) ? distanceKm(coordinates, s.coordinates) <= 15 : s.area === area)
     .map((s, i) => ({ ...s, product: found.product, price: found.price + (i === 1 ? (found.price > 100 ? 15 : 2) : 0) }));

@@ -1,4 +1,5 @@
 # KadaNet Consumer
+- [x] Separate home discovery and /search; fix dock selection and search/reset races; verify catalogue and navigation.
 - [x] Implement the shared design system and shopper search screens.
 - [x] Add typed demo search, optional location, shop details and alternatives.
 - [x] Add privacy/settings, map fallback and clear connection states.

@@ -1,10 +1,10 @@
-import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
+import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link, useRouterState } from '@tanstack/react-router';
 import { ShoppingBag, MapPin, ChevronDown, Search, Store, SlidersHorizontal, LocateFixed, WifiOff, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { areas, searchProducts, type Coordinates, type SearchResponse } from '@/lib/shopper';
+import { areas, nearbyShops, searchProducts, type Coordinates, type SearchResponse, type ShopResult } from '@/lib/shopper';
 import { registerAppWorker } from '@/lib/pwa';
 
 type ShopperContext = {
@@ -12,6 +12,7 @@ type ShopperContext = {
   response: SearchResponse | null; loading: boolean; error: string; offline: boolean;
   search: (q: string) => Promise<void>; locationOpen: boolean; setLocationOpen: (v: boolean) => void;
   hasLocation: boolean;
+  resetSearch: () => void; nearby: ShopResult[];
 };
 const Context = createContext<ShopperContext | null>(null);
 export function useShopper() {
@@ -22,7 +23,9 @@ export function useShopper() {
 export function ShopperShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: state => state.location.pathname });
   const [area, setArea] = useState('Edappally');
-  const [query, setQuery] = useState('');
+  const [query, updateQuery] = useState('');
+  const requestId = useRef(0);
+  const searchTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   const [response, setResponse] = useState<SearchResponse | null>(null);
   const [coordinates, setCoordinates] = useState<Coordinates>();
   const [loading, setLoading] = useState(false);
@@ -39,8 +42,10 @@ export function ShopperShell({ children }: { children: ReactNode }) {
     return () => { window.removeEventListener('online', update); window.removeEventListener('offline', update); };
   }, []);
   async function search(q: string) {
-    setQuery(q); setError('');
-    if (!q.trim()) { setResponse(null); setError('Enter a product name or barcode to search.'); return; }
+    clearTimeout(searchTimer.current);
+    const id = ++requestId.current;
+    updateQuery(q); setError(''); setResponse(null);
+    if (!q.trim()) { setLoading(false); return; }
     setLoading(true);
     try {
       // Cache only public results. Shopper coordinates are never persisted.
@@ -51,26 +56,38 @@ export function ShopperShell({ children }: { children: ReactNode }) {
         throw new Error('You’re offline. No saved results for this search. Reconnect and try again.');
       }
       const result = await searchProducts(q, area, coordinates);
+      if (id !== requestId.current) return;
       setResponse(result);
       const cached = { ...result, shops: result.shops.map(({ distanceKm: _distance, ...shop }) => shop), cachedAt: Date.now() };
       sessionStorage.setItem(cacheKey, JSON.stringify(cached));
-    } catch (e) { setResponse(null); setError(e instanceof Error ? e.message : 'Search couldn’t load. Please try again.'); }
-    finally { setLoading(false); }
+    } catch (e) { if (id === requestId.current) { setResponse(null); setError(e instanceof Error ? e.message : 'Search couldn’t load. Please try again.'); } }
+    finally { if (id === requestId.current) setLoading(false); }
   }
+  function resetSearch() {
+    clearTimeout(searchTimer.current); ++requestId.current;
+    updateQuery(''); setResponse(null); setLoading(false); setError('');
+  }
+  function setQuery(q: string) {
+    resetSearch(); updateQuery(q);
+    if (!q.trim()) return;
+    setLoading(true);
+    searchTimer.current = setTimeout(() => { void search(q); }, 250);
+  }
+  useEffect(() => () => { clearTimeout(searchTimer.current); ++requestId.current; }, []);
   function chooseArea(value: string) {
     if (!value.trim()) return;
-    setArea(value.trim()); setCoordinates(undefined); setResponse(null); setError(''); setLocationOpen(false); setLocationMessage('');
+    resetSearch(); setArea(value.trim()); setCoordinates(undefined); setLocationOpen(false); setLocationMessage('');
   }
   function locate() {
     setLocationMessage('');
     if (!navigator.geolocation) { setLocationMessage('Location isn’t available on this device. Choose an area below.'); return; }
     setLocating(true);
     navigator.geolocation.getCurrentPosition(position => {
-      setCoordinates({ latitude: position.coords.latitude, longitude: position.coords.longitude });
+      resetSearch(); setCoordinates({ latitude: position.coords.latitude, longitude: position.coords.longitude });
       setLocating(false); setArea('Your location'); setResponse(null); setLocationOpen(false);
     }, e => { setLocating(false); setLocationMessage(e.code === 1 ? 'Location permission was denied. You can still search by choosing an area.' : 'We couldn’t find your location. Choose an area or try again.'); }, { enableHighAccuracy: false, timeout: 10000, maximumAge: 60000 });
   }
-  return <Context.Provider value={{ area, query, setQuery, response, loading, error, offline, search, locationOpen, setLocationOpen, hasLocation: !!coordinates }}>
+  return <Context.Provider value={{ area, query, setQuery, resetSearch, nearby: nearbyShops(area, coordinates), response, loading, error, offline, search, locationOpen, setLocationOpen, hasLocation: !!coordinates }}>
     <div className="app-shell">
       <header className="app-header">
         <Link to="/" className="brand min-w-0" aria-label="KadaNet home"><span className="brand-mark"><ShoppingBag /></span><span>KadaNet<span className="text-accent-foreground">.</span></span></Link>
@@ -79,9 +96,9 @@ export function ShopperShell({ children }: { children: ReactNode }) {
       {offline && <div className="offline-banner flex items-center gap-2" role="status"><WifiOff size={15} />You’re offline. Saved results may be out of date.</div>}
       {children}
       <nav className="bottom-nav" aria-label="Main navigation">
-        <Link to="/" className={`nav-item ${pathname === '/' && !response ? 'active' : ''}`}><Search /><span>Search</span></Link>
-        <Button variant="ghost" asChild className="h-auto"><Link to="/" className={`nav-item ${(pathname === '/' && !!response) || pathname.startsWith('/shops/') ? 'active' : ''}`} onClick={() => { if (!response) void search(query || 'rice'); }}><Store /><span>Nearby shops</span></Link></Button>
-        <Link to="/settings" className={`nav-item ${pathname === '/settings' ? 'active' : ''}`}><SlidersHorizontal /><span>Settings</span></Link>
+        <Link to="/" className="nav-item" activeOptions={{ exact: true }} activeProps={{ className: 'active' }}><Store /><span>Nearby shops</span></Link>
+        <Link to="/search" className="nav-item nav-search" activeOptions={{ exact: true }} activeProps={{ className: 'active' }} onClick={() => { if (pathname === '/search') resetSearch(); }}><Search /><span>Search</span></Link>
+        <Link to="/settings" className="nav-item" activeOptions={{ exact: true }} activeProps={{ className: 'active' }}><SlidersHorizontal /><span>Settings</span></Link>
       </nav>
       <Dialog open={locationOpen} onOpenChange={setLocationOpen}><DialogContent><DialogHeader><DialogTitle>Your neighbourhood</DialogTitle><DialogDescription>Choose an area, or use your location to find shops nearby. Your precise location is not saved or shared.</DialogDescription></DialogHeader>
         <Button variant="botanical" onClick={locate} disabled={locating}>{locating ? <Loader2 className="animate-spin" /> : <LocateFixed />}{locating ? 'Finding your location…' : 'Use my location'}</Button>
