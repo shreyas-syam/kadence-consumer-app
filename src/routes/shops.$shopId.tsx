@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { ArrowLeft, Store, Navigation, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useShopper } from '@/components/shopper-shell';
+import { useShopper } from '@/components/shopper-context';
 import { ShopCard, Availability } from '@/components/shop-result';
 import { alternatives, exampleShops, rupees } from '@/lib/shopper';
 export const Route = createFileRoute('/shops/$shopId')({
