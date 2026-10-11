@@ -9,10 +9,16 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as IndexRouteImport } from './routes/index'
 import { Route as SearchRouteImport } from './routes/search'
 import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as ShopsShopIdRouteImport } from './routes/shops.$shopId'
 
+const IndexRoute = IndexRouteImport.update({
+  id: '/',
+  path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const SearchRoute = SearchRouteImport.update({
   id: '/search',
   path: '/search',
@@ -30,30 +36,34 @@ const ShopsShopIdRoute = ShopsShopIdRouteImport.update({
 } as any)
 
 export interface FileRoutesByFullPath {
+  '/': typeof IndexRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
   '/shops/$shopId': typeof ShopsShopIdRoute
 }
 export interface FileRoutesByTo {
+  '/': typeof IndexRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
   '/shops/$shopId': typeof ShopsShopIdRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
+  '/': typeof IndexRoute
   '/search': typeof SearchRoute
   '/settings': typeof SettingsRoute
   '/shops/$shopId': typeof ShopsShopIdRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/search' | '/settings' | '/shops/$shopId'
+  fullPaths: '/' | '/search' | '/settings' | '/shops/$shopId'
   fileRoutesByTo: FileRoutesByTo
-  to: '/search' | '/settings' | '/shops/$shopId'
-  id: '__root__' | '/search' | '/settings' | '/shops/$shopId'
+  to: '/' | '/search' | '/settings' | '/shops/$shopId'
+  id: '__root__' | '/' | '/search' | '/settings' | '/shops/$shopId'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
+  IndexRoute: typeof IndexRoute
   SearchRoute: typeof SearchRoute
   SettingsRoute: typeof SettingsRoute
   ShopsShopIdRoute: typeof ShopsShopIdRoute
@@ -61,6 +71,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/': {
+      id: '/'
+      path: '/'
+      fullPath: '/'
+      preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/search': {
       id: '/search'
       path: '/search'
@@ -86,6 +103,7 @@ declare module '@tanstack/react-router' {
 }
 
 const rootRouteChildren: RootRouteChildren = {
+  IndexRoute: IndexRoute,
   SearchRoute: SearchRoute,
   SettingsRoute: SettingsRoute,
   ShopsShopIdRoute: ShopsShopIdRoute,
