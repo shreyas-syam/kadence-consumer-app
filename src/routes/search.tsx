@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { Search, X, ArrowRight, Wheat, Milk, Carrot, Apple, Leaf, ShieldCheck, ScanBarcode, List, Map, MapPin, Loader2, SearchX, WifiOff, Info } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { useShopper } from '@/components/shopper-shell';
+import { useShopper } from '@/components/shopper-context';
 import { ShopCard } from '@/components/shop-result';
 import groceries from '@/assets/neighbourhood-groceries.jpg';
 

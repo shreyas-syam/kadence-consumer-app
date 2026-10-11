@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { Download, MapPin, ShieldCheck, ShoppingBag, Check } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useShopper } from '@/components/shopper-shell';
+import { useShopper } from '@/components/shopper-context';
 type InstallPrompt = Event & { prompt: () => Promise<void>; userChoice: Promise<{ outcome: string }> };
 export const Route = createFileRoute('/settings')({ head: () => ({ meta: [
   { title: 'Privacy & settings — KadaNet' }, { name: 'description', content: 'Manage your neighbourhood and learn how KadaNet protects your privacy. Install KadaNet on your home screen.' },

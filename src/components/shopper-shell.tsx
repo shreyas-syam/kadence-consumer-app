@@ -1,25 +1,12 @@
-import { createContext, useContext, useEffect, useRef, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link, useRouterState } from '@tanstack/react-router';
 import { ShoppingBag, MapPin, ChevronDown, Search, Store, SlidersHorizontal, LocateFixed, WifiOff, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
-import { areas, nearbyShops, searchProducts, type Coordinates, type SearchResponse, type ShopResult } from '@/lib/shopper';
+import { areas, nearbyShops, searchProducts, type Coordinates, type SearchResponse } from '@/lib/shopper';
+import { Context, type ShopperContext } from '@/components/shopper-context';
 import { registerAppWorker } from '@/lib/pwa';
-
-type ShopperContext = {
-  area: string; query: string; setQuery: (q: string) => void;
-  response: SearchResponse | null; loading: boolean; error: string; offline: boolean;
-  search: (q: string) => Promise<void>; locationOpen: boolean; setLocationOpen: (v: boolean) => void;
-  hasLocation: boolean;
-  resetSearch: () => void; nearby: ShopResult[];
-};
-const Context = createContext<ShopperContext | null>(null);
-export function useShopper() {
-  const value = useContext(Context);
-  if (!value) throw new Error('Shopper context is missing');
-  return value;
-}
 export function ShopperShell({ children }: { children: ReactNode }) {
   const pathname = useRouterState({ select: state => state.location.pathname });
   const [area, setArea] = useState('Edappally');
