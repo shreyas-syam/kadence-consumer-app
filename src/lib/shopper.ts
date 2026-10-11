@@ -32,7 +32,7 @@ export function distanceKm(a: Coordinates, b: Coordinates) {
 export function validCoordinates(c?: Coordinates): c is Coordinates {
   return !!c && Number.isFinite(c.latitude) && Number.isFinite(c.longitude) && Math.abs(c.latitude) <= 90 && Math.abs(c.longitude) <= 180;
 }
-export function sortNearby(shops: ShopResult[], coordinates?: Coordinates) {
+export function sortNearby(shops: ShopResult[], coordinates?: Coordinates): ShopResult[] {
   if (!validCoordinates(coordinates)) return shops.map(({ distanceKm: _distance, ...shop }) => shop);
   return shops.map(shop => ({ ...shop, distanceKm: distanceKm(coordinates, shop.coordinates) })).sort((a, b) => a.distanceKm - b.distanceKm);
 }
@@ -50,7 +50,7 @@ export function demoSearch(query: string, area: string, coordinates?: Coordinate
 // Integration boundary: no endpoint is invented. Supply the current OpenAPI
 // contract before implementing a real VITE_API_URL transport.
 export async function searchProducts(query: string, area: string, coordinates?: Coordinates): Promise<SearchResponse> {
-  if (import.meta.env.VITE_API_URL) throw new Error('The live catalogue contract has not been connected yet.');
+  if (import.meta.env['VITE_API_URL']) throw new Error('The live catalogue contract has not been connected yet.');
   await new Promise(resolve => setTimeout(resolve, 450));
   return demoSearch(query, area, coordinates);
 }
