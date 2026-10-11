@@ -1,7 +1,7 @@
 import { createFileRoute, Link } from '@tanstack/react-router';
 import { Store, MapPin, ArrowUpRight, Search, Info, ShieldCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { useShopper } from '@/components/shopper-context';
+import { useShopper } from '@/components/shopper-shell';
 import groceries from '@/assets/neighbourhood-groceries.jpg';
 
 export const Route = createFileRoute('/')({

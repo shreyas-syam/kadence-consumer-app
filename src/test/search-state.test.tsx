@@ -12,8 +12,7 @@ vi.mock('@/lib/shopper', async importOriginal => ({
   ...await importOriginal<typeof import('@/lib/shopper')>(), searchProducts: vi.fn(),
 }));
 import { searchProducts } from '@/lib/shopper';
-import { ShopperShell } from '@/components/shopper-shell';
-import { useShopper } from '@/components/shopper-context';
+import { ShopperShell, useShopper } from '@/components/shopper-shell';
 
 let shopper: ReturnType<typeof useShopper>;
 function Probe() {
