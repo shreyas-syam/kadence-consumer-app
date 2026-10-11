@@ -60,6 +60,7 @@
 .intro-photo-copy p { margin-top:12px; font-size:12px; line-height:1.6; color:var(--muted-foreground); max-width:210px; }
 .search-block { margin-top:18px; }
 .search-field { display:grid; grid-template-columns:24px minmax(0,1fr) auto; align-items:center; gap:8px; min-height:58px; border:1px solid var(--border); background:var(--elevated); border-radius:999px; padding:4px 5px 4px 18px; box-shadow:var(--shadow-soft); }
+.search-field:has(button[type=button]) { grid-template-columns:20px minmax(0,1fr) 48px auto; gap:3px; }
 .search-field:focus-within { outline:2px solid var(--accent-foreground); outline-offset:2px; }
 .search-field input { border:none; background:transparent; box-shadow:none; padding:0; font-size:13px; }
 .search-field input:focus-visible { box-shadow:none; outline:none; }
